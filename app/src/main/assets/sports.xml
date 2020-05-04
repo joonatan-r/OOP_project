@@ -1,0 +1,17 @@
+<sports>
+    <sport>
+        <name>Basketball</name>
+        <maxParticipants>30</maxParticipants>
+        <description>Throw the ball in the basket</description>
+    </sport>
+    <sport>
+        <name>Football</name>
+        <maxParticipants>25</maxParticipants>
+        <description>Kick the ball in the goal</description>
+    </sport>
+    <sport>
+        <name>Floorball</name>
+        <maxParticipants>30</maxParticipants>
+        <description>Use the stick to get the ball in the goal</description>
+    </sport>
+</sports>

@@ -1,0 +1,16 @@
+{
+  "halls": [
+      {
+        "id": "hall1",
+        "maxSize": 54
+      },
+      {
+        "id": "hall2",
+        "maxSize": 73
+      },
+      {
+        "id": "hall3",
+        "maxSize": 29
+      }
+  ]
+}

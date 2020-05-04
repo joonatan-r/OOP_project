@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:showIn="navigation_view">
+
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/nav_home"
+            android:title="@string/menu_home" />
+        <item
+            android:id="@+id/nav_my_account"
+            android:title="My account" />
+        <item
+            android:id="@+id/nav_my_reservations"
+            android:title="My reservations" />
+        <item
+            android:id="@+id/my_participations"
+            android:onClick="getMyParticipations"
+            android:title="My participations" />
+        <item
+            android:id="@+id/nav_search"
+            android:title="Search" />
+        <item
+            android:id="@+id/log_out"
+            android:onClick="logout"
+            android:title="Log out"
+            />
+    </group>
+</menu>

@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/mobile_navigation"
+    app:startDestination="@+id/nav_home">
+
+    <fragment
+        android:id="@+id/nav_home"
+        android:name="com.example.oop_project.ui.home.HomeFragment"
+        android:label="@string/menu_home"
+        tools:layout="@layout/fragment_home" />
+
+    <fragment
+        android:id="@+id/nav_my_account"
+        android:name="com.example.oop_project.ui.my_account.MyAccountFragment"
+        android:label="My account" />
+
+    <fragment
+        android:id="@+id/nav_my_reservations"
+        android:name="com.example.oop_project.ui.my_reservations.MyReservationsFragment"
+        android:label="My reservations" />
+
+    <fragment
+        android:id="@+id/nav_search"
+        android:name="com.example.oop_project.ui.search.SearchFragment"
+        android:label="Search" />
+
+    <fragment
+        android:id="@+id/nav_new_reservation"
+        android:name="com.example.oop_project.ui.new_reservation.NewReservationFragment"
+        android:label="New reservation" />
+
+    <fragment
+        android:id="@+id/nav_edit_reservation"
+        android:name="com.example.oop_project.ui.edit_reservation.EditReservationFragment"
+        android:label="Edit reservation" />
+
+    <fragment
+        android:id="@+id/nav_reservation_info"
+        android:name="com.example.oop_project.ui.reservation_info.ReservationInfoFragment"
+        android:label="Reservation info" />
+
+    <fragment
+        android:id="@+id/nav_user_info"
+        android:name="com.example.oop_project.ui.user_info.UserInfoFragment"
+        android:label="User info" />
+
+    <fragment
+        android:id="@+id/nav_sport_info"
+        android:name="com.example.oop_project.ui.sport_info.SportInfoFragment"
+        android:label="Sport info" />
+
+    <fragment
+        android:id="@+id/nav_admin"
+        android:name="com.example.oop_project.admin.AdminFragment"
+        android:label="Admin" />
+</navigation>
