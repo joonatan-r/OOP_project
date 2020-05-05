@@ -28,6 +28,9 @@ public class AdminFragment extends Fragment {
     private DataAccess da;
     private HallInfoContainer hic;
 
+    /*
+    Sets up buttons and initializes DataAccess and HallInfoContainer instances for accessing data.
+     */
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         da = new DataAccess(requireContext());
 
@@ -79,6 +82,10 @@ public class AdminFragment extends Fragment {
         return root;
     }
 
+    /*
+    Shows an alert dialog where properties of new hall can be inputted, then calls HallInfoContainer
+    to add a new hall.
+     */
     private void addHall() {
         final EditText idInput = new EditText(requireContext());
         idInput.setHint("Id");
@@ -97,7 +104,23 @@ public class AdminFragment extends Fragment {
                 .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        if (hic.addHall(new Hall(idInput.getText().toString(), Integer.parseInt(maxSizeInput.getText().toString())))) {
+                        String id = idInput.getText().toString();
+                        String maxSizeText = maxSizeInput.getText().toString();
+                        int maxSize;
+
+                        try {
+                            maxSize = Integer.parseInt(maxSizeText);
+                        } catch (Exception e) {
+                            Toast.makeText(requireContext(), "Invalid inputs", Toast.LENGTH_SHORT).show();
+                            return;
+                        }
+
+                        if (id.equals("")) {
+                            Toast.makeText(requireContext(), "Invalid inputs", Toast.LENGTH_SHORT).show();
+                            return;
+                        }
+
+                        if (hic.addHall(new Hall(id, maxSize))) {
                             Toast.makeText(requireContext(), "Added hall successfully", Toast.LENGTH_SHORT).show();
                         } else {
                             Toast.makeText(requireContext(), "Adding hall failed", Toast.LENGTH_SHORT).show();
@@ -108,6 +131,10 @@ public class AdminFragment extends Fragment {
                 .show();
     }
 
+    /*
+    Shows an alert dialog where hall id can be inputted, then calls HallInfoContainer to delete it.
+    Also removes all reservations that were for the hall if deletion was successful.
+     */
     private void deleteHall() {
         final EditText idInput = new EditText(requireContext());
         idInput.setHint("Id");
@@ -120,7 +147,6 @@ public class AdminFragment extends Fragment {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         if (hic.removeHall(idInput.getText().toString())) {
-                            // remove reservations that were for this hall
                             da.removeReservationsByField("hall", idInput.getText().toString());
                             Toast.makeText(requireContext(), "Deleted hall successfully", Toast.LENGTH_SHORT).show();
                         } else {
@@ -132,6 +158,9 @@ public class AdminFragment extends Fragment {
                 .show();
     }
 
+    /*
+    Shows an alert dialog where username can be inputted, then calls DataAccess to delete the user.
+     */
     private void deleteUser() {
         final EditText nameInput = new EditText(requireContext());
         nameInput.setHint("Username");
@@ -153,6 +182,9 @@ public class AdminFragment extends Fragment {
                 .show();
     }
 
+    /*
+    Shows an alert dialog where reservation id can be inputted, then calls DataAccess to delete it.
+     */
     private void deleteReservation() {
         final EditText idInput = new EditText(requireContext());
         idInput.setHint("Id");
@@ -175,6 +207,9 @@ public class AdminFragment extends Fragment {
                 .show();
     }
 
+    /*
+    Shows an alert dialog where sport id can be inputted, then calls DataAccess to delete it.
+     */
     private void deleteSport() {
         final EditText nameInput = new EditText(requireContext());
         nameInput.setHint("Name");

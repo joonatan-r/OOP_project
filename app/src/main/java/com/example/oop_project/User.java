@@ -1,5 +1,9 @@
 package com.example.oop_project;
 
+/*
+Even though usernames are unique, user has an id that is used in reservations so that when changing
+username only the name recorded for this user in the users file needs to be updated.
+ */
 public class User {
     private String id;
     private String username;

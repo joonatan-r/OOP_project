@@ -24,6 +24,9 @@ public class CreateAccountFragment extends Fragment {
     private EditText phoneInput;
     private EditText infoInput;
 
+    /*
+    Sets up create button and gets input views to variables.
+     */
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View root = inflater.inflate(R.layout.fragment_create_account, container, false);
         usernameInput = root.findViewById(R.id.usernameInput);
@@ -39,12 +42,22 @@ public class CreateAccountFragment extends Fragment {
                 createUser();
             }
         });
-
         return root;
     }
 
+    /*
+    Gets input values for username, password, email, phone number and user info and checks that none
+    of them are empty, info is at least 10 characters long and that the same password is inputted
+    twice. The password needs to be at least 12 characters long and contain at least one number,
+    upper case letter, lower case letter and special character. Also generates an id for the user
+    with System.currentTimeMillis, which is a sufficient unique id for this project. Even though
+    usernames are unique, user has an id that is used in reservations so that when changing username
+    only the name recorded for this user in the users file needs to be updated. If all inputs meet
+    the required conditions, calls DataAccess to add a new user. If successful, automatically
+    restores login fragment.
+     */
     private void createUser() {
-        String id = String.valueOf(System.currentTimeMillis()); // sufficient id for this project
+        String id = String.valueOf(System.currentTimeMillis());
         String username = usernameInput.getText().toString();
         String password = passwordInput.getText().toString();
         String confirmPassword = confirmPassWordInput.getText().toString();

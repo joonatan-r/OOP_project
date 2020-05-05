@@ -31,6 +31,14 @@ public class MainActivity extends AppCompatActivity {
     private ArrayList<Hall> hallsList;
     private String[] hallNames;
 
+    /*
+    Here the app's navigation is set up. Some of the views can't be accessed from the drawer and can
+    only be navigated to from certain other views. MainActivity stores the current user's id and
+    username and the halls in the system. Username is gotten from intent that login activity gives
+    when it starts this. If user is admin, an extra item is inserted into the drawer allowing admin
+    to navigate to their own fragment. User id is gotten from DataAccess by username, and the halls
+    from HallInfoContainer.
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -119,6 +127,10 @@ public class MainActivity extends AppCompatActivity {
         this.username = username;
     }
 
+    /*
+    Activated by selecting the "Log out" drawer item. User is asked for confirmation before
+    executing finishLogout.
+     */
     public void logout(MenuItem item) {
         new AlertDialog.Builder(this)
             .setTitle("Log out")
@@ -139,6 +151,11 @@ public class MainActivity extends AppCompatActivity {
         finish();
     }
 
+    /*
+    Activated by selecting the "My participations" drawer item. Navigates to search fragment with
+    current user's username as an argument, which tells the fragment to automatically search for
+    reservations that have the user as a participant.
+     */
     public void getMyParticipations(MenuItem item) {
         Bundle bundle = new Bundle();
         bundle.putString("user", username);

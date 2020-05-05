@@ -16,6 +16,10 @@ import com.example.oop_project.R;
 import com.example.oop_project.Sport;
 
 public class SportInfoFragment extends Fragment {
+    /*
+    Gets the sport from InfoViewModel, and sets text views to display its info. InfoViewModel's
+    sport has to be set before navigating here, or this immediately navigates back.
+     */
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         final InfoViewModel model = new ViewModelProvider(requireActivity()).get(InfoViewModel.class);
         View root = inflater.inflate(R.layout.fragment_sport_info, container, false);

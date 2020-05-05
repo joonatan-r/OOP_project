@@ -14,6 +14,10 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 
+/*
+This class stores all halls' info in a JSONObject and provides methods for adding and removing
+halls. The info is stored in a json file and parsed into the JSONObject when the app is running.
+ */
 public class HallInfoContainer {
     private final String hallsFileName = "hall_info.json";
     private Context context;
@@ -24,7 +28,7 @@ public class HallInfoContainer {
         File hallsFile = new File(filesDirPath, hallsFileName);
         this.context = context;
 
-        // if file doesn't exist (first run), copy default info from assets
+        // If file doesn't exist (first run), copy default info from assets
 
         InputStream in = hallsFile.exists()
                 ? context.openFileInput(hallsFileName)
@@ -46,6 +50,10 @@ public class HallInfoContainer {
         }
     }
 
+    /*
+    Converts this classes JSONObject of halls into an ArrayList of Hall objects and returns it. If
+    there's an error, the returned list contains all Hall objects added before encountering it.
+     */
     public ArrayList<Hall> getHalls() {
         ArrayList<Hall> hallsList = new ArrayList<>();
 
@@ -66,6 +74,11 @@ public class HallInfoContainer {
         return hallsList;
     }
 
+    /*
+    Takes a Hall object as a parameter, converts it to a JSONObject, adds it to this classes
+    JSONObject containing all halls and replaces the halls file contents to reflect the change.
+    Returns true if successful and false if an error occurred.
+     */
     public boolean addHall(Hall hall) {
         try {
             JSONArray hallsArray = halls.getJSONArray("halls");
@@ -76,7 +89,6 @@ public class HallInfoContainer {
             OutputStreamWriter ows = new OutputStreamWriter(context.openFileOutput(hallsFileName, Context.MODE_PRIVATE));
             ows.write(halls.toString());
             ows.close();
-
             return true;
         } catch (JSONException | IOException e) {
             e.printStackTrace();
@@ -85,6 +97,12 @@ public class HallInfoContainer {
         return false;
     }
 
+    /*
+    Takes an id String as a parameter and removes the hall with matching id from the JSONObject
+    containing all halls and replaces the halls file contents to reflect the change. Returns true if
+    deleted hall successfully, and false if there was an error or a hall with matching id couldn't
+    be found.
+     */
     public boolean removeHall(String id) {
         try {
             JSONArray hallsArray = halls.getJSONArray("halls");
@@ -99,11 +117,12 @@ public class HallInfoContainer {
                 }
             }
 
+            if (idx < 0) return false;
+
             hallsArray.remove(idx);
             OutputStreamWriter ows = new OutputStreamWriter(context.openFileOutput(hallsFileName, Context.MODE_PRIVATE));
             ows.write(halls.toString());
             ows.close();
-
             return true;
         } catch (JSONException | IOException e) {
             e.printStackTrace();

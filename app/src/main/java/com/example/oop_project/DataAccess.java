@@ -31,6 +31,10 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
+/*
+This class provides access to all user, reservation and sports data. All of them are saved in their
+own xml files and read by parsing them into Documents.
+ */
 public class DataAccess {
     private Context context;
     private File usersFile;
@@ -49,7 +53,7 @@ public class DataAccess {
         this.reservationsFile = new File(filesDirPath, reservationsFileName);
         this.sportsFile = new File(filesDirPath, sportsFileName);
 
-        if (!this.sportsFile.exists()) { // first run, copy default one from assets
+        if (!this.sportsFile.exists()) { // First run, copy default one from assets
             try {
                 InputStream in = context.getResources().getAssets().open(sportsFileName);
                 BufferedReader br = new BufferedReader(new InputStreamReader(in));
@@ -69,6 +73,11 @@ public class DataAccess {
         }
     }
 
+    /*
+    Takes username and password Strings as parameters and checks if the users file contains a user
+    with that username and password. Returns true if it does and false if it doesn't or there's an
+    error.
+     */
     public boolean validateLogin(String username, String password) {
         if (username.equals(adminName)) return password.equals(adminPassword);
 
@@ -87,6 +96,10 @@ public class DataAccess {
         return false;
     }
 
+    /*
+    Takes a Document and a filename String as parameters and replaces the contents of the file with
+    the Document's contents.
+     */
     private void writeChanges(Document doc, String fileName) throws TransformerException, IOException {
         Transformer transformer = TransformerFactory.newInstance().newTransformer();
         DOMSource source = new DOMSource(doc);
@@ -94,12 +107,13 @@ public class DataAccess {
         transformer.transform(source, result);
     }
 
-    private int hallTaken(Element root, String hall, String startTime, String endTime) {
-        return hallTaken(root, hall, startTime, endTime, ""); // id "" never matches
-    }
-
-    // hallTaken makes special case for ignoring id (useful when editing reservation)
-
+    /*
+    Takes a root Element and hall, start time, end time and id Strings as parameters and checks if
+    the root contains a reservation that uses the hall at or between the given times. It makes a
+    special case for ignoring id, which is useful when an existing reservation is being edited.
+    Returns 1 if it finds a reservation that uses the hall, 0 if it doesn't, and -1 in case
+    of an error.
+     */
     private int hallTaken(Element root, String hall, String startTime, String endTime, String id) {
         DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm");
         NodeList nList = root.getElementsByTagName("reservation");
@@ -138,6 +152,18 @@ public class DataAccess {
         return 0;
     }
 
+    /*
+    Overloads hallTaken to give the id parameter a default value of an empty String, which means
+    hallTaken won't ignore any reservations, because the id will never match.
+     */
+    private int hallTaken(Element root, String hall, String startTime, String endTime) {
+        return hallTaken(root, hall, startTime, endTime, "");
+    }
+
+    /*
+    Iterates through the sports file and returns all the sports as Sport objects in an ArrayList.
+    If there's an error trying to get the sports, returns an empty list.
+     */
     public ArrayList<Sport> getSports() {
         ArrayList<Sport> sportsList = new ArrayList<>();
 
@@ -168,6 +194,10 @@ public class DataAccess {
         return sportsList;
     }
 
+    /*
+    Takes a root Element and a name String as parameters. Returns a sport Element with that name if
+    the root contains it, and null otherwise.
+     */
     private Element getSportElement(Element root, String name) {
         NodeList nList = root.getElementsByTagName("sport");
 
@@ -185,6 +215,11 @@ public class DataAccess {
         return null;
     }
 
+    /*
+    Takes a Sport object as a parameter and tries to write it in the sports file. Returns 1 if
+    there already is a sport with the same name, -1 if there's an error and 0 if the sport is
+    added successfully.
+     */
     public int addSport(Sport sport) {
         if (sportsFile.exists()) {
             try {
@@ -216,6 +251,10 @@ public class DataAccess {
         return -1;
     }
 
+    /*
+    Takes a name String as a parameter and deletes the sport with that name from the sports file.
+    Returns true if deletion was successful and false if there was an error.
+     */
     public boolean removeSport(String name) {
         if (sportsFile.exists()) {
             try {
@@ -224,6 +263,9 @@ public class DataAccess {
                 doc.getDocumentElement().normalize();
                 Element root = doc.getDocumentElement();
                 Element sportElement = getSportElement(root, name);
+
+                if (sportElement == null) return false;
+
                 root.removeChild(sportElement);
                 writeChanges(doc, sportsFileName);
                 return true;
@@ -235,6 +277,11 @@ public class DataAccess {
         return false;
     }
 
+    /*
+    Takes a root Element and value and field Strings as parameters. Returns a user Element with the
+    value in the corresponding field, if the root contains it, and null if it doesn't. Always
+    returns null if the given field isn't "id" or "username".
+     */
     private Element getUserElement(Element root, String value, String field) {
         NodeList nList = root.getElementsByTagName("user");
 
@@ -254,6 +301,11 @@ public class DataAccess {
         return null;
     }
 
+    /*
+    Takes a User object as a parameter and tries to write it in the users file. Returns 1 if there
+    already is a user with the same name, -1 if there's an error and 0 if the user is added
+    successfully. Creates the users file if it doesn't exist yet.
+     */
     public int addUser(User user) {
         if (user.getUsername().equals(adminName)) return 1;
 
@@ -330,6 +382,13 @@ public class DataAccess {
         return 0;
     }
 
+    /*
+    Takes an id String and a User object as parameters and replaces the user in the users file that
+    has the same id. Returns 1 if the username is being changed and there already is a user that has
+    the new name. If username isn't being changed, it has to be null so that this method knows not
+    to check if it's already in use. Returns -1 if there's an error and 0 if the user was edited
+    successfully.
+     */
     public int editUser(String id, User user) {
         String username = user.getUsername();
         String password = user.getPassword();
@@ -345,8 +404,6 @@ public class DataAccess {
                 Document doc = db.parse(usersFile);
                 doc.getDocumentElement().normalize();
                 Element root = doc.getDocumentElement();
-
-                // checks whether the new name is taken
 
                 if (getUserElement(root, username, "username") != null) return 1;
 
@@ -370,6 +427,11 @@ public class DataAccess {
         return -1;
     }
 
+    /*
+    Takes value and field Strings as parameters and returns a User object with the value in the
+    corresponding field, if the users file contains it, and null if it doesn't. Always returns null
+    if the given field isn't "id" or "username".
+     */
     public User getUser(String value, String field) {
         User user = null;
 
@@ -398,13 +460,20 @@ public class DataAccess {
         return user;
     }
 
+    /*
+    Takes a username String as a parameter and deletes the user with that name from the users file.
+    Also deletes the user's reservations and participations. Returns true if deletion was successful
+    and false if there was an error.
+     */
     public boolean removeUser(String username) {
-        // first remove all user's reservations and participations
-
         User user = getUser(username, "username");
+
+        if (user == null) return false;
+
         String id = user.getId();
-        removeReservationsByField("owner", id);
-        removeParticipant(null, id);
+
+        if (!removeReservationsByField("owner", id)) return false;
+        if (!removeParticipant(null, id)) return false;
 
         if (usersFile.exists()) {
             try {
@@ -424,6 +493,11 @@ public class DataAccess {
         return false;
     }
 
+    /*
+    Takes a Reservation object as a parameter and tries to write it in the reservations file.
+    Returns 1 if the hall is already taken at that time, -1 if there's an error and 0 if the
+    reservation is added successfully. Creates the reservations file if it doesn't exist yet.
+     */
     public int addReservation(Reservation reservation) {
         if (reservationsFile.exists()) {
             try {
@@ -518,6 +592,12 @@ public class DataAccess {
         return 0;
     }
 
+    /*
+    Takes an id String and a Reservation object as parameters and replaces the reservation in the
+    reservations file that has the same id. Returns 1 if the hall is already taken at that time by
+    another reservation (ignoring if it's taken by the reservation itself). Returns -1 if there's an
+    error and 0 if the reservation was edited successfully.
+     */
     public int editReservation(String id, Reservation reservation) {
         if (reservationsFile.exists()) {
             try {
@@ -567,8 +647,13 @@ public class DataAccess {
         return -1;
     }
 
-    // note: doesn't support using maxParticipants as field
-
+    /*
+    Takes field and value Strings as parameters and deletes all the reservations that have the value
+    in the corresponding field from the reservations file. The field can be any of reservation's
+    attributes except maxParticipants. Returns true if the deletion was successful and false if
+    there was an error. Also returns false if tried to delete a particular reservation by giving id
+    as the field and no reservation was found.
+     */
     public boolean removeReservationsByField(String field, String value) {
         ArrayList<Node> toBeDeleted = new ArrayList<>();
 
@@ -590,11 +675,11 @@ public class DataAccess {
                     if (el.getElementsByTagName(field).item(0).getTextContent().equals(value)) {
                         toBeDeleted.add(node);
 
-                        if (field.equals("id")) break; // ids are unique
+                        if (field.equals("id")) break; // Ids are unique
                     }
                 }
 
-                if (field.equals("id") && toBeDeleted.size() == 0) return false; // failure if didn't find particular reservation
+                if (field.equals("id") && toBeDeleted.size() == 0) return false;
 
                 for (Node n : toBeDeleted) root.removeChild(n);
 
@@ -612,12 +697,19 @@ public class DataAccess {
         return removeReservationsByField("id", id);
     }
 
-    public ArrayList<Reservation> searchReservation(String text, String where, boolean exact) { // search from all halls
-        return searchReservation(text, where, exact, null);
-    }
-
-    // note: doesn't support using maxParticipants as where
-
+    /*
+    Takes the Strings "text", "where" and "fromHall" and the boolean "exact" as parameters and
+    searches the reservations file for reservations that have "text" in the field "where". If
+    "exact" is true, content of the field must be exactly the same as "text", otherwise case is
+    ignored and it's enough if the field's content contains "text". Because reservation's
+    participants are saved as user ids, if field is "participants", instead of field's content
+    "text" is compared to participants' usernames, which are taken from the users file by the user
+    id. Only reservations in the hall "fromHall" are checked, or if "fromHall" is null, all
+    reservations are checked. "Where" can be "all" or any single one of reservation's attributes
+    except maxParticipants. Returns all matching reservations as Reservation objects in an
+    ArrayList. If there's an error, the returned list contains all reservations added before the
+    error.
+     */
     public ArrayList<Reservation> searchReservation(String text, String where, boolean exact, String fromHall) {
         ArrayList<Reservation> list = new ArrayList<>();
 
@@ -655,8 +747,6 @@ public class DataAccess {
 
                                 if (participant.getNodeType() != Node.ELEMENT_NODE) continue;
 
-                                // participants are searched by username, not id
-
                                 String participantName = getUser(participant.getTextContent(), "id").getUsername();
 
                                 if (participantName.toLowerCase().contains(text.toLowerCase())) {
@@ -687,8 +777,6 @@ public class DataAccess {
                                 Node participant = participantsList.item(j);
 
                                 if (participant.getNodeType() != Node.ELEMENT_NODE) continue;
-
-                                // participants are searched by username, not id
 
                                 String participantName = getUser(participant.getTextContent(), "id").getUsername();
 
@@ -733,6 +821,20 @@ public class DataAccess {
         return list;
     }
 
+    /*
+    Overloads searchReservation to give the fromHall parameter a default value of null, which means
+    search from all halls.
+     */
+    public ArrayList<Reservation> searchReservation(String text, String where, boolean exact) {
+        return searchReservation(text, where, exact, null);
+    }
+
+    /*
+    Takes reservationId and userId Strings as parameters and tries to add the user as a participant
+    to the reservation with matching id in the reservations file. Returns 0 if the user's id is
+    successfully saved in participants. Returns 1 if the reservation already has its maximum amount
+    of participants, and returns -1 if there's an error.
+     */
     public int addParticipant(String reservationId, String userId) {
         if (reservationsFile.exists()) {
             try {
@@ -794,6 +896,12 @@ public class DataAccess {
         return -1;
     }
 
+    /*
+    Takes reservationId and userId Strings as parameters and removes the user's id from
+    participants of the reservation with matching id in the reservations file. If reservationId is
+    null the user's id is removed from all reservations' participants if it can be found there.
+    Returns false if there is an error and true otherwise.
+     */
     public boolean removeParticipant(String reservationId, String userId) {
         if (reservationsFile.exists()) {
             try {
@@ -809,8 +917,6 @@ public class DataAccess {
                     if (node.getNodeType() != Node.ELEMENT_NODE) continue;
 
                     Element el = (Element) node;
-
-                    // if id is null, delete this participant everywhere
 
                     if ((reservationId == null || el.getElementsByTagName("id").item(0).getTextContent().equals(reservationId))
                             && el.getElementsByTagName("participants").getLength() != 0) {
@@ -838,6 +944,12 @@ public class DataAccess {
         return false;
     }
 
+    /*
+    Takes a reservationId String as a parameter and returns all participants of the reservation with
+    matching id in the reservations file as an ArrayList of User objects. The users' other
+    attributes are taken from the users file by their user id. Returns an empty list if there's an
+    error.
+     */
     public ArrayList<User> getParticipants(String reservationId) {
         ArrayList<User> usersList = new ArrayList<>();
 
@@ -857,18 +969,18 @@ public class DataAccess {
                     Element el = (Element) node;
 
                     if (el.getElementsByTagName("id").item(0).getTextContent().equals(reservationId)) {
-                        if (el.getElementsByTagName("participants").getLength() != 0) {
-                            Element participantsElement = (Element) el.getElementsByTagName("participants").item(0);
-                            NodeList participantsList = participantsElement.getElementsByTagName("participant");
+                        if (el.getElementsByTagName("participants").getLength() == 0) continue;
 
-                            for (int j = 0; j < participantsList.getLength(); j++) {
-                                Node participant = participantsList.item(j);
+                        Element participantsElement = (Element) el.getElementsByTagName("participants").item(0);
+                        NodeList participantsList = participantsElement.getElementsByTagName("participant");
 
-                                if (participant.getNodeType() != Node.ELEMENT_NODE) continue;
+                        for (int j = 0; j < participantsList.getLength(); j++) {
+                            Node participant = participantsList.item(j);
 
-                                String userId = participant.getTextContent();
-                                usersList.add(getUser(userId, "id"));
-                            }
+                            if (participant.getNodeType() != Node.ELEMENT_NODE) continue;
+
+                            String userId = participant.getTextContent();
+                            usersList.add(getUser(userId, "id"));
                         }
                     }
                 }

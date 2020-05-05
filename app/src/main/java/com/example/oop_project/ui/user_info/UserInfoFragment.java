@@ -16,6 +16,10 @@ import com.example.oop_project.R;
 import com.example.oop_project.User;
 
 public class UserInfoFragment extends Fragment {
+    /*
+    Gets the user from InfoViewModel, and sets text views to display its info. InfoViewModel's user
+    has to be set before navigating here, or this immediately navigates back.
+     */
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         InfoViewModel model = new ViewModelProvider(requireActivity()).get(InfoViewModel.class);
         View root = inflater.inflate(R.layout.fragment_user_info, container, false);

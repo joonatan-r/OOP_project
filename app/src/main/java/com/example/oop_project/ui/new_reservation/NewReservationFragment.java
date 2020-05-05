@@ -50,6 +50,21 @@ public class NewReservationFragment extends Fragment {
     private ArrayList<Sport> sportsList = null;
     private DataAccess da;
 
+    /*
+    Sets up inputs for giving the new reservation's attributes. Sets cancel button to simply
+    navigate back, confirm button to call createReservation and sport info button to navigate to
+    sport info fragment for the currently selected sport. Add sport button is set to open an alert
+    dialog where the user can input the attributes of a new sport to be added in the system. It is
+    checked that name isn't empty, max participants is a valid positive number and description is at
+    least 10 characters long. If all requirements are met, DataAccess is called to add a new sport.
+    The reservation's date and start and end times are inputted by clicking a button that is set to
+    open a date or time picker. The pickers set the corresponding inputs to have the selected date
+    or times as formatted strings. Hall and sport are set to be selected from their own spinners.
+    Sports are gotten from DataAccess and halls from main activity. Sport can also be "Not defined",
+    which is the first item in the spinner. Home fragments "Free time" items navigate here giving
+    the hall and start time as string arguments, so if those arguments are found, hall and date
+    input's initial values are set accordingly.
+     */
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         da = new DataAccess(requireContext());
         owner = ((MainActivity) requireActivity()).getCurrentUserId();
@@ -208,14 +223,14 @@ public class NewReservationFragment extends Fragment {
             }
         });
 
-        // When coming here from home view's "Free time", set hall and date automatically
-
         if (getArguments() != null) {
             String hall = getArguments().getString("hall");
             String startTime = getArguments().getString("startTime");
             int position = hallSpinnerAdapter.getPosition(hall);
 
-            hallSpinner.setSelection(position);
+            if (position >= 0) hallSpinner.setSelection(position);
+
+            // Reservation start times are in format yyyy.MM.dd HH:mm
 
             if (startTime != null) dateInput.setText(startTime.split(" ")[0]);
         }
@@ -223,8 +238,18 @@ public class NewReservationFragment extends Fragment {
         return root;
     }
 
+    /*
+    Checks all the inputs for the new reservation. Max participants has to be a valid positive
+    number, and it is checked that it isn't more than the selected hall's max size or the selected
+    sports max participants, if a sport is selected. Checks that end time is at least 30 minutes
+    after the start time, which is the minimum, and that start time isn't already gone. The
+    description has to be at least 10 characters long. Also generates an id for the reservation
+    with System.currentTimeMillis, which is a sufficient unique id for this project. If all
+    requirements are met, a Reservation object is created and DataAccess is called to add a
+    reservation with it. Automatically navigates back if the new reservation was added successfully.
+     */
     private void createReservation() {
-        String id = String.valueOf(System.currentTimeMillis()); // sufficient id for this project
+        String id = String.valueOf(System.currentTimeMillis()); // Sufficient id for this project
         String hall = hallSpinner.getSelectedItem().toString();
         String startTime = dateInput.getText().toString() + " " + startTimeInput.getText().toString();
         String endTime = dateInput.getText().toString() + " " + endTimeInput.getText().toString();

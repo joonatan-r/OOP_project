@@ -35,6 +35,11 @@ public class MyAccountFragment extends Fragment {
     private String phoneNumber;
     private String info;
 
+    /*
+    Calls DataAccess to get current user's information and fills the corresponding inputs with them.
+    If current user is admin, immediately navigates back as admin doesn't have a normal account.
+    Sets confirm button to try and make the changes and cancel button to simply navigate back.
+     */
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         da = new DataAccess(requireContext());
         id = ((MainActivity) requireActivity()).getCurrentUserId();
@@ -80,13 +85,17 @@ public class MyAccountFragment extends Fragment {
         return root;
     }
 
+    /*
+    Checks that all inputs meet the same requirements as in create account fragment, except here an
+    empty input means that attribute will remain unchanged. If requirements are met, shows an alert
+    dialog where the user has to input their password to confirm the changes, then calls
+    validateConfirm.
+     */
     private void confirm() {
         if (!passwordInput.getText().toString().equals(confirmPassWordInput.getText().toString())) {
             Toast.makeText(requireContext(), "Please give the same password twice", Toast.LENGTH_SHORT).show();
             return;
         }
-
-        // empty input means field won't be changed
 
         if (!infoInput.getText().toString().equals("") && infoInput.getText().toString().length() < 10) {
             Toast.makeText(requireContext(), "Minimum length for info is 10 characters", Toast.LENGTH_SHORT).show();
@@ -134,6 +143,14 @@ public class MyAccountFragment extends Fragment {
                 .show();
     }
 
+    /*
+    Calls DataAccess to check if the given password is correct, and if it is, gets the values from
+    inputs, creates a User object with them and calls DataAccess to edit current user with it. If an
+    input is empty, user's current value is inserted in its place, except in the case of username.
+    If username isn't being changed (input is empty or same as before), null is inserted in its
+    place, because editUser checks if the name is already taken and this way it knows not to check
+    it. If name was updated successfully, also updates it in main activity.
+     */
     private void validateConfirm() {
         if (da.validateLogin(username, givePassword.getText().toString())) {
             String newName = usernameInput.getText().toString();
@@ -146,9 +163,6 @@ public class MyAccountFragment extends Fragment {
             if (newPhoneNumber.equals("")) newPhoneNumber = phoneNumber;
             if (newInfo.equals("")) newInfo = info;
             if (newPassword.equals("")) newPassword = password;
-
-            // if username isn't being changed, have it as null, because editUser checks
-            // if the name is already taken and this way it knows not to check it
 
             if (newName.equals("") || newName.equals(username)) newName = null;
 

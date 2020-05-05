@@ -44,14 +44,24 @@ public class ReservationInfoFragment extends Fragment {
     private ArrayList<String> nameList = new ArrayList<>();
     private ArrayList<User> usersList = new ArrayList<>();
     private ArrayAdapter<String> spinnerAdapter;
-    private boolean initialSelectionDone;
 
+    /*
+    Gets the reservation from InfoViewModel, and sets text views to display its info.
+    InfoViewModel's reservation has to be set before navigating here, or this immediately navigates
+    back. Sets up participate button, which allows the current user to add or remove themselves as
+    participants for this reservation, and owner button, which shows the reservation's owner's name
+    and navigates to their user info fragment when clicked. If the reservation's start time has
+    already gone, participate button is disabled. Sets up a spinner where the participants' names
+    are shown. The first item is an unclickable "Users" that operates as a header. Selecting a user
+    from the spinner navigates to their user info fragment. The owner's and current user's
+    information are gotten by their ids using DataAccess. If current user is admin, participation is
+    disabled and additionally the reservation's id is shown so that admin can use it to delete any
+    reservation. If current user is found in the participants, participate button is updated
+    accordingly.
+     */
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         final InfoViewModel model = new ViewModelProvider(requireActivity()).get(InfoViewModel.class);
         da = new DataAccess(requireContext());
-        currentUserId = ((MainActivity) requireActivity()).getCurrentUserId();
-        currentUser = da.getUser(currentUserId, "id");
-        currentUserName = currentUser.getUsername();
         View root = inflater.inflate(R.layout.fragment_reservation_info, container, false);
         TextView hallInfo = root.findViewById(R.id.hallInfo);
         TextView startTimeInfo = root.findViewById(R.id.startTimeInfo);
@@ -84,24 +94,35 @@ public class ReservationInfoFragment extends Fragment {
         };
         spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         participantsSpinner.setAdapter(spinnerAdapter);
-        initialSelectionDone = false;
         participantsSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                if (!initialSelectionDone) {
-                    initialSelectionDone = true; // first item is selected automatically when creating view
-                    return;
+                if (position != 0) { // First item is selected automatically when creating view, and it needs to be ignored
+                    User user = usersList.get(position - 1); // NameList has "Users" as the first item, so adjust index
+                    model.setUser(user);
+                    Navigation.findNavController(view).navigate(R.id.nav_user_info);
+                    parent.setSelection(0); // "Users" will always be set as the first item
                 }
-
-                User user = usersList.get(position - 1); // nameList has (unclickable) "Users" as the first item
-                model.setUser(user);
-                Navigation.findNavController(view).navigate(R.id.nav_user_info);
-                parent.setSelection(0); // "Users" will always be the first item, operating as a header
             }
 
             @Override
             public void onNothingSelected(AdapterView<?> parent) {}
         });
+        currentUserId = ((MainActivity) requireActivity()).getCurrentUserId();
+
+        if (currentUserId.equals(DataAccess.adminName)) {
+            participateButton.setEnabled(false);
+        } else {
+            currentUser = da.getUser(currentUserId, "id");
+
+            if (currentUser == null) {
+                Toast.makeText(requireContext(), "Failed to get user", Toast.LENGTH_SHORT).show();
+                requireActivity().onBackPressed();
+                return null;
+            }
+
+            currentUserName = currentUser.getUsername();
+        }
 
         if (model.getReservation() != null && (reservation = model.getReservation().getValue()) != null) {
             hallInfo.setText(reservation.getHall());
@@ -119,7 +140,7 @@ public class ReservationInfoFragment extends Fragment {
             }
 
             usersList = da.getParticipants(reservation.getId());
-            nameList.clear(); // if nameList isn't cleared here, items get duplicated when navigating back
+            nameList.clear(); // If nameList isn't cleared here, items get duplicated when navigating back here
             nameList.add("Users");
 
             for (User u : usersList) {
@@ -158,6 +179,11 @@ public class ReservationInfoFragment extends Fragment {
         return root;
     }
 
+    /*
+    Calls DataAccess to either add or remove the current user as a participant of the reservation,
+    depending on their status. Also updates participate button's text and the lists containing
+    participating users and their names.
+     */
     private void toggleParticipation() {
         if (isParticipant) {
             if (da.removeParticipant(reservation.getId(), currentUserId)) {
@@ -167,6 +193,7 @@ public class ReservationInfoFragment extends Fragment {
 
                 int idx = -1;
                 for (int i = 0; i < usersList.size(); i++) if (usersList.get(i).getId().equals(currentUserId)) idx = i;
+
                 usersList.remove(idx);
                 spinnerAdapter.clear();
                 spinnerAdapter.addAll(nameList);

@@ -50,6 +50,12 @@ public class EditReservationFragment extends Fragment {
     private ArrayList<Sport> sportsList;
     private DataAccess da;
 
+    /*
+    The same as new reservation fragment's onCreateView, except the reservation being edited is
+    gotten from InfoViewModel and the inputs are initialized with values got from it, and an info
+    button is set up to navigate to this reservation's reservation info fragment. InfoViewModel's
+    reservation has to be set before navigating here, or this immediately navigates back.
+     */
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         da = new DataAccess(requireContext());
         final InfoViewModel model = new ViewModelProvider(requireActivity()).get(InfoViewModel.class);
@@ -164,7 +170,7 @@ public class EditReservationFragment extends Fragment {
         infoButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // model already has the right reservation
+                // Model already has the right reservation
                 Navigation.findNavController(v).navigate(R.id.nav_reservation_info);
             }
         });
@@ -246,7 +252,9 @@ public class EditReservationFragment extends Fragment {
             descriptionInput.setText(reservation.getDescription());
 
             if (reservation.getSport() != null) {
-                sportSpinner.setSelection(sportSpinnerAdapter.getPosition(reservation.getSport()));
+                int position = sportSpinnerAdapter.getPosition(reservation.getSport());
+
+                if (position >= 0) sportSpinner.setSelection(position);
             }
         } else {
             Toast.makeText(requireContext(), "Failed to get reservation", Toast.LENGTH_SHORT).show();
@@ -256,6 +264,10 @@ public class EditReservationFragment extends Fragment {
         return root;
     }
 
+    /*
+    The same as new reservation fragment's createReservation, except id is kept the same and
+    DataAccess is called to edit reservation instead of adding.
+     */
     private void editReservation() {
         String id = reservation.getId();
         String owner = reservation.getOwner();
@@ -363,8 +375,13 @@ public class EditReservationFragment extends Fragment {
         requireActivity().onBackPressed();
     }
 
+    /*
+    Calls DataAccess to remove the reservation with the id of the reservation being edited.
+    Automatically navigates back if successful.
+     */
     private void deleteReservation() {
         DataAccess da = new DataAccess(requireContext());
+
         if (da.removeReservation(reservation.getId())) {
             Toast.makeText(requireContext(), "Deleted reservation", Toast.LENGTH_SHORT).show();
             requireActivity().onBackPressed();

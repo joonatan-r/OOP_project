@@ -4,6 +4,10 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
+/*
+This class is used to transmit info on a particular reservation, user or sport between different
+fragments.
+ */
 public class InfoViewModel extends ViewModel {
     private MutableLiveData<Reservation> reservation = new MutableLiveData<>();
     private MutableLiveData<User> user = new MutableLiveData<>();

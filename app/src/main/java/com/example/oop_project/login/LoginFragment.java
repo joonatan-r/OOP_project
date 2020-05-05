@@ -24,6 +24,9 @@ public class LoginFragment extends Fragment {
     private EditText usernameInput;
     private EditText passwordInput;
 
+    /*
+    Sets up login button and gets input views to variables.
+     */
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View root = inflater.inflate(R.layout.fragment_login, container, false);
         Button loginButton = root.findViewById(R.id.loginButton);
@@ -35,24 +38,33 @@ public class LoginFragment extends Fragment {
         });
         usernameInput = root.findViewById(R.id.usernameInput);
         passwordInput = root.findViewById(R.id.passwordInput);
-
         return root;
     }
 
+    /*
+    Sets toolbar title and hides the back arrow in it when starting or restoring this fragment.
+     */
     @Override
     public void onResume() {
         super.onResume();
         ActionBar toolbar = ((LoginActivity) requireActivity()).getSupportActionBar();
+
         if (toolbar != null) {
             toolbar.setTitle("Log in");
             toolbar.setDisplayHomeAsUpEnabled(false);
         }
     }
 
+    /*
+    Gets inputs and calls DataAccess to check if the login credentials are valid. If they are,
+    generates a random 6-digit number that the user has to input in an alert dialog simulating a
+    passcode (just simulating, as the passcode is shown to the user). If user types the number
+    correctly, executes finishLogin from login activity.
+     */
     private void login() {
         DataAccess da = new DataAccess(requireContext());
         final String username = usernameInput.getText().toString();
-        final String password = passwordInput.getText().toString();
+        String password = passwordInput.getText().toString();
 
         if (da.validateLogin(username, password)) {
             Random r = new Random();
@@ -83,11 +95,7 @@ public class LoginFragment extends Fragment {
                     .setNegativeButton(android.R.string.cancel, null)
                     .show();
         } else {
-            new AlertDialog.Builder(requireContext())
-                    .setTitle("Failed to log in")
-                    .setMessage("Could not log in with those inputs")
-                    .setPositiveButton(android.R.string.yes, null)
-                    .show();
+            Toast.makeText(requireContext(), "Could not log in with those inputs", Toast.LENGTH_SHORT).show();
         }
     }
 }

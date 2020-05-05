@@ -47,12 +47,16 @@ class SearchReservationsAdapter extends RecyclerView.Adapter<SearchReservationsA
         this.model = model;
     }
 
+    /*
+    Sets layout for items, and if it's a normal reservation, it's set up to navigate to reservation
+    info fragment for that reservation.
+     */
     @NonNull
     @Override
     public SearchReservationsAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_search_reservation, parent, false);
 
-        if (viewType == 0) { // No click listener for "no results" item
+        if (viewType == 0) {
             view.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -66,6 +70,9 @@ class SearchReservationsAdapter extends RecyclerView.Adapter<SearchReservationsA
         return new ViewHolder(view);
     }
 
+    /*
+    Sets items to have their reservation description as their text.
+     */
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         holder.textView.setText(reservationsList.get(position).getDescription());
@@ -76,9 +83,12 @@ class SearchReservationsAdapter extends RecyclerView.Adapter<SearchReservationsA
         return reservationsList.size();
     }
 
+    /*
+    Item view type 0 is for normal reservation and 1 for the "No results" dummy item
+     */
     @Override
     public int getItemViewType(int position) {
-        if (reservationsList.get(position).getId() == null) return 1; // "No results" item
+        if (reservationsList.get(position).getId() == null) return 1;
 
         return 0;
     }
@@ -93,6 +103,16 @@ public class SearchFragment extends Fragment {
     private ArrayList<Reservation> reservationsList = new ArrayList<>();
     private DataAccess da;
 
+    /*
+    Sets up a RecyclerView with a SearchReservationsAdapter that's initially empty. Gets search
+    input into a variable and sets up search button to perform the search and a spinner where the
+    user can choose what reservation attributes to search from (default is "all"). The first item of
+    the spinner is an unclickable "Search by...", which acts as a hint. A switch enables the user to
+    control whether the search is exact or not, and initial value of the switch is false. The drawer
+    item "My participations" navigates to this fragment and gives username as an argument, so if the
+    argument is found, automatically perform a search for that username in participants with exact
+    being true.
+     */
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         InfoViewModel model = new ViewModelProvider(requireActivity()).get(InfoViewModel.class);
         View root = inflater.inflate(R.layout.fragment_search, container, false);
@@ -125,7 +145,7 @@ public class SearchFragment extends Fragment {
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                if (position > 0) { // ignore first item which is hint (it's automatically clicked when creating)
+                if (position > 0) { // First item is automatically selected when creating view, and it needs to be ignored
                     searchFrom = spinnerItems[position];
                 }
             }
@@ -135,8 +155,6 @@ public class SearchFragment extends Fragment {
         });
         exactSwitch = root.findViewById(R.id.exactSwitch);
         exactSwitch.setChecked(false);
-
-        // "My participations" automatically just goes here and searches for them by giving user as argument
 
         if (getArguments() != null && !getArguments().isEmpty()) {
             searchInput.setText(getArguments().getString("user"));
@@ -149,6 +167,11 @@ public class SearchFragment extends Fragment {
         return root;
     }
 
+    /*
+    Performs search by calling DataAccess with the given inputs, clears SearchReservationsAdapter's
+    data list of reservations and adds the returned results to it. If the returned list is empty,
+    a dummy item that indicates no results were found is inserted.
+     */
     private void search() {
         reservationsList.clear();
         reservationsList.addAll(da.searchReservation(searchInput.getText().toString(), searchFrom, exactSwitch.isChecked()));
