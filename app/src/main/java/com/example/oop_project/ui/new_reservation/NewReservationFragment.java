@@ -9,12 +9,14 @@ import android.text.format.DateFormat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
@@ -47,6 +49,7 @@ public class NewReservationFragment extends Fragment {
     private Spinner hallSpinner;
     private Spinner sportSpinner;
     private String owner;
+    private ArrayList<Hall> hallsList = null;
     private ArrayList<Sport> sportsList = null;
     private DataAccess da;
 
@@ -69,6 +72,17 @@ public class NewReservationFragment extends Fragment {
         da = new DataAccess(requireContext());
         owner = ((MainActivity) requireActivity()).getCurrentUserId();
         final InfoViewModel model = new ViewModelProvider(requireActivity()).get(InfoViewModel.class);
+        hallsList = ((MainActivity) requireActivity()).getHallsList();
+
+        if (hallsList == null) {
+            new AlertDialog.Builder(requireContext())
+                    .setTitle("Getting hall info failed")
+                    .setMessage("Fatal error, restart app")
+                    .setPositiveButton(android.R.string.yes, null)
+                    .show();
+            return null;
+        }
+
         View root = inflater.inflate(R.layout.fragment_new_reservation, container, false);
         startTimeInput = root.findViewById(R.id.startTimeInput);
         endTimeInput = root.findViewById(R.id.endTimeInput);
@@ -164,6 +178,18 @@ public class NewReservationFragment extends Fragment {
         hallSpinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         hallSpinnerAdapter.addAll(((MainActivity) requireActivity()).getHallNames());
         hallSpinner.setAdapter(hallSpinnerAdapter);
+        final TextView hallMaxInfo = root.findViewById(R.id.hallMaxInfo);
+        hallSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                int hallMax = hallsList.get(position).getMaxSize();
+
+                hallMaxInfo.setText(String.valueOf(hallMax));
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {}
+        });
         sportSpinner = root.findViewById(R.id.sportSpinner);
         ArrayAdapter<String> sportSpinnerAdapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_spinner_item);
         sportSpinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -256,17 +282,6 @@ public class NewReservationFragment extends Fragment {
         String description = descriptionInput.getText().toString();
         String sportName = sportSpinner.getSelectedItem().toString();
         boolean sportSelected = sportSpinner.getSelectedItemPosition() != 0; // "Not defined" item is at 0
-        ArrayList<Hall> hallsList = ((MainActivity) requireActivity()).getHallsList();
-
-        if (hallsList == null) {
-            new AlertDialog.Builder(requireContext())
-                    .setTitle("Creating reservation failed")
-                    .setMessage("Fatal error, restart app")
-                    .setPositiveButton(android.R.string.yes, null)
-                    .show();
-            return;
-        }
-
         int hallMax = hallsList.get(hallSpinner.getSelectedItemPosition()).getMaxSize();
         int sportMax = sportSelected ? sportsList.get(sportSpinner.getSelectedItemPosition() - 1).getMaxParticipants() : 0;
         String maxParticipantsText = maxParticipantsInput.getText().toString();

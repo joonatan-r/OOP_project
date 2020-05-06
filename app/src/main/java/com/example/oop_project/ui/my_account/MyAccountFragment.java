@@ -186,7 +186,7 @@ public class MyAccountFragment extends Fragment {
             }
 
             if (newName != null) {
-                ((MainActivity) requireActivity()).setUsername(newName);
+                ((MainActivity) requireActivity()).setCurrentUsername(newName);
             }
 
             Toast.makeText(requireContext(), "Changes made successfully", Toast.LENGTH_SHORT).show();

@@ -26,7 +26,7 @@ public class MainActivity extends AppCompatActivity {
     private AppBarConfiguration mAppBarConfiguration;
     private NavController navController;
     private DrawerLayout drawer;
-    private String username;
+    private String currentUsername;
     private String currentUserId;
     private ArrayList<Hall> hallsList;
     private String[] hallNames;
@@ -54,9 +54,9 @@ public class MainActivity extends AppCompatActivity {
         navController = Navigation.findNavController(this, R.id.nav_host_fragment);
         NavigationUI.setupActionBarWithNavController(this, navController, mAppBarConfiguration);
         NavigationUI.setupWithNavController(navigationView, navController);
-        username = getIntent().getStringExtra("USERNAME");
+        currentUsername = getIntent().getStringExtra("USERNAME");
 
-        if (username == null) {
+        if (currentUsername == null) {
             new AlertDialog.Builder(this)
                     .setTitle("Fatal error")
                     .setMessage("Could not get user")
@@ -66,7 +66,7 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
-        if (username.equals(DataAccess.adminName)) {
+        if (currentUsername.equals(DataAccess.adminName)) {
             currentUserId = DataAccess.adminName;
             MenuItem item = navigationView.getMenu().add("Admin");
             item.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
@@ -79,7 +79,7 @@ public class MainActivity extends AppCompatActivity {
             });
         } else {
             DataAccess da = new DataAccess(this);
-            currentUserId = da.getUser(username, "username").getId();
+            currentUserId = da.getUser(currentUsername, "username").getId();
         }
 
         HallInfoContainer hic;
@@ -123,8 +123,8 @@ public class MainActivity extends AppCompatActivity {
         return hallNames;
     }
 
-    public void setUsername(String username) {
-        this.username = username;
+    public void setCurrentUsername(String username) {
+        this.currentUsername = username;
     }
 
     /*
@@ -158,7 +158,7 @@ public class MainActivity extends AppCompatActivity {
      */
     public void getMyParticipations(MenuItem item) {
         Bundle bundle = new Bundle();
-        bundle.putString("user", username);
+        bundle.putString("user", currentUsername);
         navController.navigate(R.id.nav_search, bundle);
         drawer.closeDrawers();
     }
